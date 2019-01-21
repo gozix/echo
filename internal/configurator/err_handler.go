@@ -4,6 +4,7 @@ package configurator
 import (
 	"net/http"
 
+	"github.com/gozix/glue"
 	zapBundle "github.com/gozix/zap"
 	"github.com/labstack/echo"
 	"github.com/sarulabs/di"
@@ -23,6 +24,25 @@ func DefErrHandlerConfigurator() di.Def {
 			Name: TagConfigurator,
 		}},
 		Build: func(ctn di.Container) (_ interface{}, err error) {
+			var registry glue.Registry
+			if err = ctn.Fill(glue.DefRegistry, &registry); err != nil {
+				return nil, err
+			}
+
+			var defName string
+			if err = registry.Fill(DefErrHandlerConfiguratorName, &defName); err != nil {
+				return nil, err
+			}
+
+			if len(defName) > 0 {
+				var handler Configurator
+				if err = ctn.Fill(defName, &handler); err != nil {
+					return nil, err
+				}
+
+				return handler, nil
+			}
+
 			var logger *zap.Logger
 			if err = ctn.Fill(zapBundle.BundleName, &logger); err != nil {
 				return nil, err

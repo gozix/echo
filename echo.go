@@ -2,6 +2,7 @@
 package echo
 
 import (
+	"github.com/gozix/glue"
 	validatorBundle "github.com/gozix/validator"
 	viperBundle "github.com/gozix/viper"
 	zapBundle "github.com/gozix/zap"
@@ -14,13 +15,23 @@ import (
 
 type (
 	// Bundle implements the glue.Bundle interface.
-	Bundle struct{}
+	Bundle struct {
+		errHandlerDefName string
+	}
 
 	// Configurator is type alias of configurator.Configurator.
 	Configurator = configurator.Configurator
 
 	// Controller is type alias of controller.Controller.
 	Controller = configurator.Controller
+
+	// Option interface.
+	Option interface {
+		apply(b *Bundle)
+	}
+
+	// optionFunc wraps a func so it satisfies the Option interface.
+	optionFunc func(b *Bundle)
 )
 
 const (
@@ -37,9 +48,22 @@ const (
 // BundleName is default definition name.
 const BundleName = "echo"
 
+// ErrHandler option.
+func ErrHandler(defName string) Option {
+	return optionFunc(func(b *Bundle) {
+		b.errHandlerDefName = defName
+	})
+}
+
 // NewBundle create bundle instance.
-func NewBundle() *Bundle {
-	return new(Bundle)
+func NewBundle(options ...Option) *Bundle {
+	var b = new(Bundle)
+
+	for _, option := range options {
+		option.apply(b)
+	}
+
+	return b
 }
 
 // Name implements the glue.Bundle interface.
@@ -54,6 +78,13 @@ func (b *Bundle) Build(builder *di.Builder) error {
 		di.Def{
 			Name: BundleName,
 			Build: func(ctn di.Container) (_ interface{}, err error) {
+				var registry glue.Registry
+				if err = ctn.Fill(glue.DefRegistry, &registry); err != nil {
+					return nil, err
+				}
+
+				registry.Set(configurator.DefErrHandlerConfiguratorName, b.errHandlerDefName)
+
 				var e = echo.New()
 				for name, def := range ctn.Definitions() {
 					for _, tag := range def.Tags {
@@ -97,4 +128,9 @@ func (b *Bundle) DependsOn() []string {
 		validatorBundle.BundleName,
 		zapBundle.BundleName,
 	}
+}
+
+// apply implements Option.
+func (f optionFunc) apply(bundle *Bundle) {
+	f(bundle)
 }
