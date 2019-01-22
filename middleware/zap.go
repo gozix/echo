@@ -113,11 +113,15 @@ func ZapWithConfig(cfg ZapConfig) echo.MiddlewareFunc {
 					fields = append(fields, zap.String(field, req.UserAgent()))
 				case "status":
 					var s = res.Status
-					switch v := err.(type) {
-					case *errors.HTTPError:
-						s = v.Code
-					case *echo.HTTPError:
-						s = v.Code
+					if err != nil {
+						switch v := err.(type) {
+						case *errors.HTTPError:
+							s = v.Code
+						case *echo.HTTPError:
+							s = v.Code
+						default:
+							s = echo.ErrInternalServerError.Code
+						}
 					}
 
 					fields = append(fields, zap.Int(field, s))
