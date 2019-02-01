@@ -143,14 +143,16 @@ func ZapWithConfig(cfg ZapConfig) echo.MiddlewareFunc {
 				case "bytes_out":
 					fields = append(fields, zap.Int64(field, res.Size))
 				default:
+					field = strings.ToLower(strings.Replace(field, "-", "_", -1))
+
 					switch {
-					case strings.HasPrefix(field, "header:"):
+					case strings.HasPrefix(field, "header_"):
 						fields = append(fields, zap.String(field, c.Request().Header.Get(field[7:])))
-					case strings.HasPrefix(field, "query:"):
+					case strings.HasPrefix(field, "query_"):
 						fields = append(fields, zap.String(field, c.QueryParam(field[6:])))
-					case strings.HasPrefix(field, "form:"):
+					case strings.HasPrefix(field, "form_"):
 						fields = append(fields, zap.String(field, c.FormValue(field[5:])))
-					case strings.HasPrefix(field, "cookie:"):
+					case strings.HasPrefix(field, "cookie_"):
 						if cookie, err := c.Cookie(field[7:]); err == nil {
 							fields = append(fields, zap.String(field, cookie.Value))
 						}
