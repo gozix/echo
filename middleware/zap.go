@@ -4,6 +4,7 @@ package middleware
 import (
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -145,14 +146,14 @@ func ZapWithConfig(cfg ZapConfig) echo.MiddlewareFunc {
 				default:
 					switch {
 					case strings.HasPrefix(field, "header:"):
-						fields = append(fields, zap.String(field, c.Request().Header.Get(field[7:])))
+						fields = append(fields, zap.String(snakeCase(field), c.Request().Header.Get(field[7:])))
 					case strings.HasPrefix(field, "query:"):
-						fields = append(fields, zap.String(field, c.QueryParam(field[6:])))
+						fields = append(fields, zap.String(snakeCase(field), c.QueryParam(field[6:])))
 					case strings.HasPrefix(field, "form:"):
-						fields = append(fields, zap.String(field, c.FormValue(field[5:])))
+						fields = append(fields, zap.String(snakeCase(field), c.FormValue(field[5:])))
 					case strings.HasPrefix(field, "cookie:"):
 						if cookie, err := c.Cookie(field[7:]); err == nil {
-							fields = append(fields, zap.String(field, cookie.Value))
+							fields = append(fields, zap.String(snakeCase(field), cookie.Value))
 						}
 					}
 				}
@@ -163,4 +164,30 @@ func ZapWithConfig(cfg ZapConfig) echo.MiddlewareFunc {
 			return err
 		}
 	}
+}
+
+func snakeCase(str string) string {
+	var (
+		runes    = []rune(str)
+		length   = len(runes)
+		alphanum = []*unicode.RangeTable{unicode.Latin, unicode.Digit}
+		out      []rune
+	)
+
+	for i := 0; i < length; i++ {
+		if !unicode.In(runes[i], alphanum...) {
+			if i > 0 && unicode.In(runes[i-1], alphanum...) {
+				out = append(out, '_')
+			}
+			continue
+		}
+		if i > 0 && unicode.IsUpper(runes[i]) && ((i+1 < length && unicode.IsLower(runes[i+1])) || unicode.IsLower(runes[i-1])) {
+			if unicode.In(runes[i-1], alphanum...) {
+				out = append(out, '_')
+			}
+		}
+		out = append(out, unicode.ToLower(runes[i]))
+	}
+
+	return string(out)
 }
