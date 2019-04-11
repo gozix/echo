@@ -4,7 +4,7 @@ package middleware
 import (
 	"strings"
 	"time"
-	"unicode"
+	"unsafe"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -166,28 +166,42 @@ func ZapWithConfig(cfg ZapConfig) echo.MiddlewareFunc {
 	}
 }
 
-func snakeCase(str string) string {
-	var (
-		runes    = []rune(str)
-		length   = len(runes)
-		alphanum = []*unicode.RangeTable{unicode.Latin, unicode.Digit}
-		out      []rune
-	)
+func snakeCase(s string) string {
+	var b = make([]byte, 0, len(s)*2)
+	for i := 0; i < len(s); i++ {
+		if s[i] > 0x80 {
+			continue
+		}
 
-	for i := 0; i < length; i++ {
-		if !unicode.In(runes[i], alphanum...) {
-			if i > 0 && unicode.In(runes[i-1], alphanum...) {
-				out = append(out, '_')
+		if !isAlphaNum(s[i]) {
+			if i > 0 && isAlphaNum(s[i-1]) {
+				b = append(b, '_')
 			}
 			continue
 		}
-		if i > 0 && unicode.IsUpper(runes[i]) && ((i+1 < length && unicode.IsLower(runes[i+1])) || unicode.IsLower(runes[i-1])) {
-			if unicode.In(runes[i-1], alphanum...) {
-				out = append(out, '_')
+		if i > 0 && isUpper(s[i]) && ((i+1 < len(s) && isLower(s[i+1])) || isLower(s[i-1])) {
+			if isAlphaNum(s[i-1]) {
+				b = append(b, '_')
 			}
 		}
-		out = append(out, unicode.ToLower(runes[i]))
+		if isUpper(s[i]) {
+			b = append(b, s[i]+'a'-'A')
+		} else {
+			b = append(b, s[i])
+		}
 	}
 
-	return string(out)
+	return *(*string)(unsafe.Pointer(&b))
+}
+
+func isLower(c byte) bool {
+	return c >= 'a' && c <= 'z'
+}
+
+func isUpper(c byte) bool {
+	return c >= 'A' && c <= 'Z'
+}
+
+func isAlphaNum(c byte) bool {
+	return (c >= '0' && c <= '9') || isUpper(c) || isLower(c)
 }
