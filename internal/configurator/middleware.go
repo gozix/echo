@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 )
 
 // Middleware is middleware definition.

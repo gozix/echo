@@ -4,13 +4,13 @@ package configurator
 import (
 	"net/http"
 
-	"github.com/gozix/glue"
-	zapBundle "github.com/gozix/zap"
+	"github.com/gozix/glue/v2"
+	zapBundle "github.com/gozix/zap/v2"
 	"github.com/labstack/echo"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 	"go.uber.org/zap"
 
-	"github.com/gozix/echo/errors"
+	"github.com/gozix/echo/v2/errors"
 )
 
 // DefErrHandlerConfiguratorName definition name.

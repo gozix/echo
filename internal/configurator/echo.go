@@ -2,10 +2,10 @@
 package configurator
 
 import (
-	viperBundle "github.com/gozix/viper"
+	viperBundle "github.com/gozix/viper/v2"
 	"github.com/labstack/echo"
 	"github.com/labstack/gommon/log"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 )
 
 // DefEchoConfiguratorName is a definition name.

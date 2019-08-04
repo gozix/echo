@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/middleware"
 	"gopkg.in/go-playground/validator.v9"
 
-	"github.com/gozix/echo/errors"
+	"github.com/gozix/echo/v2/errors"
 )
 
 // ErrTransConfig defines the config for ErrTransWithConfig middleware.

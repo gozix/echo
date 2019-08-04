@@ -3,7 +3,7 @@ package configurator
 
 import (
 	"github.com/labstack/echo"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 )
 
 // Controller is a controller interface.

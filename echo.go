@@ -2,15 +2,15 @@
 package echo
 
 import (
-	"github.com/gozix/glue"
-	validatorBundle "github.com/gozix/validator"
-	viperBundle "github.com/gozix/viper"
-	zapBundle "github.com/gozix/zap"
+	"github.com/gozix/glue/v2"
+	validatorBundle "github.com/gozix/validator/v2"
+	viperBundle "github.com/gozix/viper/v2"
+	zapBundle "github.com/gozix/zap/v2"
 	"github.com/labstack/echo"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 
-	"github.com/gozix/echo/internal/command"
-	"github.com/gozix/echo/internal/configurator"
+	"github.com/gozix/echo/v2/internal/command"
+	"github.com/gozix/echo/v2/internal/configurator"
 )
 
 type (

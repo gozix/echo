@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/middleware"
 	"go.uber.org/zap"
 
-	"github.com/gozix/echo/errors"
+	"github.com/gozix/echo/v2/errors"
 )
 
 // ZapConfig defines the config for AccessWithConfig middleware.

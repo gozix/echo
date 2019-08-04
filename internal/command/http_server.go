@@ -9,10 +9,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gozix/glue"
-	"github.com/gozix/viper"
+	"github.com/gozix/glue/v2"
+	"github.com/gozix/viper/v2"
 	"github.com/labstack/echo"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 	"github.com/spf13/cobra"
 )
 
