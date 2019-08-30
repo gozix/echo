@@ -3,7 +3,7 @@ package configurator
 
 import (
 	viperBundle "github.com/gozix/viper/v2"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"github.com/sarulabs/di/v2"
 )

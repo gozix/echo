@@ -3,7 +3,7 @@ package configurator
 
 import (
 	validatorBundle "github.com/gozix/validator/v2"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/sarulabs/di/v2"
 	"gopkg.in/go-playground/validator.v9"
 )

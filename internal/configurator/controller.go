@@ -2,7 +2,7 @@
 package configurator
 
 import (
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/sarulabs/di/v2"
 )
 

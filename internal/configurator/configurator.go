@@ -1,7 +1,7 @@
 // Package configurator provide container definitions.
 package configurator
 
-import "github.com/labstack/echo"
+import "github.com/labstack/echo/v4"
 
 // Configurator is custom function configurator.
 type Configurator = func(*echo.Echo) error

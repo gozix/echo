@@ -6,7 +6,7 @@ import (
 	validatorBundle "github.com/gozix/validator/v2"
 	viperBundle "github.com/gozix/viper/v2"
 	zapBundle "github.com/gozix/zap/v2"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/sarulabs/di/v2"
 
 	"github.com/gozix/echo/v2/internal/command"
