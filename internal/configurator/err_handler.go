@@ -4,13 +4,14 @@ package configurator
 import (
 	"net/http"
 
-	"github.com/gozix/glue/v2"
-	zapBundle "github.com/gozix/zap/v2"
-	"github.com/labstack/echo/v4"
-	"github.com/sarulabs/di/v2"
 	"go.uber.org/zap"
 
+	"github.com/labstack/echo/v4"
+	"github.com/sarulabs/di/v2"
+
 	"github.com/gozix/echo/v2/errors"
+	"github.com/gozix/glue/v2"
+	gzZap "github.com/gozix/zap/v2"
 )
 
 // DefErrHandlerConfiguratorName definition name.
@@ -44,7 +45,7 @@ func DefErrHandlerConfigurator() di.Def {
 			}
 
 			var logger *zap.Logger
-			if err = ctn.Fill(zapBundle.BundleName, &logger); err != nil {
+			if err = ctn.Fill(gzZap.BundleName, &logger); err != nil {
 				return nil, err
 			}
 

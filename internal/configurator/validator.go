@@ -2,10 +2,11 @@
 package configurator
 
 import (
-	validatorBundle "github.com/gozix/validator/v2"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/sarulabs/di/v2"
-	"gopkg.in/go-playground/validator.v9"
+
+	gzValidator "github.com/gozix/validator/v2"
 )
 
 // Wrapper implementation.
@@ -25,8 +26,8 @@ func DefValidatorConfigurator() di.Def {
 		}},
 		Build: func(ctn di.Container) (interface{}, error) {
 			return func(e *echo.Echo) (err error) {
-				var v *validatorBundle.Validate
-				if err = ctn.Fill(validatorBundle.BundleName, &v); err != nil {
+				var v *validator.Validate
+				if err = ctn.Fill(gzValidator.BundleName, &v); err != nil {
 					return err
 				}
 

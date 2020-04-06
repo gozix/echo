@@ -2,10 +2,12 @@
 package configurator
 
 import (
-	viperBundle "github.com/gozix/viper/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"github.com/sarulabs/di/v2"
+	"github.com/spf13/viper"
+
+	gzViper "github.com/gozix/viper/v2"
 )
 
 // DefEchoConfiguratorName is a definition name.
@@ -20,8 +22,8 @@ func DefEchoConfigurator() di.Def {
 		}},
 		Build: func(ctn di.Container) (interface{}, error) {
 			return func(e *echo.Echo) (err error) {
-				var cfg *viperBundle.Viper
-				if err = ctn.Fill(viperBundle.BundleName, &cfg); err != nil {
+				var cfg *viper.Viper
+				if err = ctn.Fill(gzViper.BundleName, &cfg); err != nil {
 					return err
 				}
 

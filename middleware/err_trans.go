@@ -2,10 +2,10 @@
 package middleware
 
 import (
-	"github.com/go-playground/universal-translator"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"gopkg.in/go-playground/validator.v9"
 
 	"github.com/gozix/echo/v2/errors"
 )
