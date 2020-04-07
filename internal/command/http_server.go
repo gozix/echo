@@ -40,6 +40,8 @@ func DefEchoHTTPServer() di.Def {
 					}
 
 					// run
+					e.Logger.Info("Starting...")
+
 					go e.Logger.Error(
 						e.Start(
 							net.JoinHostPort(
@@ -51,6 +53,7 @@ func DefEchoHTTPServer() di.Def {
 
 					// wait
 					<-cmd.Context().Done()
+					e.Logger.Info("Stopping...")
 
 					// shutdown
 					var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
