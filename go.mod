@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-playground/validator/v10 v10.2.0
-	github.com/gozix/glue/v2 v2.1.0
+	github.com/gozix/glue/v2 v2.2.0
 	github.com/gozix/validator/v2 v2.1.0
 	github.com/gozix/viper/v2 v2.1.1
 	github.com/gozix/zap/v2 v2.0.1

@@ -4,9 +4,6 @@ package command
 import (
 	"context"
 	"net"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -32,8 +29,8 @@ func DefEchoHTTPServer() di.Def {
 				Use:   "http-server",
 				Short: "Run http server",
 				RunE: func(cmd *cobra.Command, args []string) (err error) {
-					var cnf *viper.Viper
-					if err = ctn.Fill(viper.BundleName, &cnf); err != nil {
+					var cfg *viper.Viper
+					if err = ctn.Fill(viper.BundleName, &cfg); err != nil {
 						return err
 					}
 
@@ -42,21 +39,21 @@ func DefEchoHTTPServer() di.Def {
 						return err
 					}
 
+					// run
 					go e.Logger.Error(
 						e.Start(
 							net.JoinHostPort(
-								cnf.GetString("echo.host"),
-								cnf.GetString("echo.port"),
+								cfg.GetString("echo.host"),
+								cfg.GetString("echo.port"),
 							),
 						),
 					)
 
-					signalChan := make(chan os.Signal, 1)
-					signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+					// wait
+					<-cmd.Context().Done()
 
-					<-signalChan
-
-					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+					// shutdown
+					var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 					defer cancel()
 
 					return e.Shutdown(ctx)
