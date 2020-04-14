@@ -4,40 +4,29 @@ package configurator
 import (
 	"net/http"
 
-	"go.uber.org/zap"
-
 	"github.com/labstack/echo/v4"
 	"github.com/sarulabs/di/v2"
+	"go.uber.org/zap"
+
+	gzZap "github.com/gozix/zap/v2"
 
 	"github.com/gozix/echo/v2/errors"
-	"github.com/gozix/glue/v2"
-	gzZap "github.com/gozix/zap/v2"
 )
 
 // DefErrHandlerConfiguratorName definition name.
 const DefErrHandlerConfiguratorName = "echo.configurator.err_handler"
 
 // DefErrHandlerConfigurator is echo error handler definition getter.
-func DefErrHandlerConfigurator() di.Def {
+func DefErrHandlerConfigurator(errHandlerDefName string) di.Def {
 	return di.Def{
 		Name: DefErrHandlerConfiguratorName,
 		Tags: []di.Tag{{
 			Name: TagConfigurator,
 		}},
 		Build: func(ctn di.Container) (_ interface{}, err error) {
-			var registry glue.Registry
-			if err = ctn.Fill(glue.DefRegistry, &registry); err != nil {
-				return nil, err
-			}
-
-			var defName string
-			if err = registry.Fill(DefErrHandlerConfiguratorName, &defName); err != nil {
-				return nil, err
-			}
-
-			if len(defName) > 0 {
+			if len(errHandlerDefName) > 0 {
 				var handler Configurator
-				if err = ctn.Fill(defName, &handler); err != nil {
+				if err = ctn.Fill(errHandlerDefName, &handler); err != nil {
 					return nil, err
 				}
 
