@@ -2,12 +2,12 @@
 package echo
 
 import (
-	"github.com/gozix/glue/v2"
-	validatorBundle "github.com/gozix/validator/v2"
-	viperBundle "github.com/gozix/viper/v2"
-	zapBundle "github.com/gozix/zap/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/sarulabs/di/v2"
+
+	gzValidator "github.com/gozix/validator/v2"
+	gzViper "github.com/gozix/viper/v2"
+	gzZap "github.com/gozix/zap/v2"
 
 	"github.com/gozix/echo/v2/internal/command"
 	"github.com/gozix/echo/v2/internal/configurator"
@@ -49,6 +49,7 @@ const (
 const BundleName = "echo"
 
 // ErrHandler option.
+// Deprecated: Use container definitions overriding. Will be removed in 3.0.
 func ErrHandler(defName string) Option {
 	return optionFunc(func(b *Bundle) {
 		b.errHandlerDefName = defName
@@ -78,13 +79,6 @@ func (b *Bundle) Build(builder *di.Builder) error {
 		di.Def{
 			Name: BundleName,
 			Build: func(ctn di.Container) (_ interface{}, err error) {
-				var registry glue.Registry
-				if err = ctn.Fill(glue.DefRegistry, &registry); err != nil {
-					return nil, err
-				}
-
-				registry.Set(configurator.DefErrHandlerConfiguratorName, b.errHandlerDefName)
-
 				var e = echo.New()
 				for name, def := range ctn.Definitions() {
 					for _, tag := range def.Tags {
@@ -110,12 +104,12 @@ func (b *Bundle) Build(builder *di.Builder) error {
 		},
 
 		// command's
-		command.DefEchoHTTPServer(),
+		command.DefEchoHTTPServer(BundleName),
 
 		// configurator's
 		configurator.DefControllerConfigurator(),
 		configurator.DefEchoConfigurator(),
-		configurator.DefErrHandlerConfigurator(),
+		configurator.DefErrHandlerConfigurator(b.errHandlerDefName),
 		configurator.DefMiddlewareConfigurator(),
 		configurator.DefValidatorConfigurator(),
 	)
@@ -124,9 +118,9 @@ func (b *Bundle) Build(builder *di.Builder) error {
 // DependsOn implements the glue.DependsOn interface.
 func (b *Bundle) DependsOn() []string {
 	return []string{
-		viperBundle.BundleName,
-		validatorBundle.BundleName,
-		zapBundle.BundleName,
+		gzViper.BundleName,
+		gzValidator.BundleName,
+		gzZap.BundleName,
 	}
 }
 
