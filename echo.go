@@ -22,8 +22,11 @@ type (
 	// Configurator is type alias of configurator.Configurator.
 	Configurator = configurator.Configurator
 
-	// Controller is type alias of controller.Controller.
+	// Controller is type alias of configurator.Controller.
 	Controller = configurator.Controller
+
+	// GracefulController is type alias of configurator.GracefulController.
+	GracefulController = configurator.GracefulController
 
 	// Option interface.
 	Option interface {

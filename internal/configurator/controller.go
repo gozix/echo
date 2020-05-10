@@ -11,6 +11,11 @@ type Controller interface {
 	Serve(e *echo.Echo)
 }
 
+// GracefulController is a graceful interface.
+type GracefulController interface {
+	OnShutdown()
+}
+
 const (
 	// DefControllerConfiguratorName is a definition name.
 	DefControllerConfiguratorName = "echo.configurator.controller"
@@ -40,6 +45,10 @@ func DefControllerConfigurator() di.Def {
 						}
 
 						c.Serve(e)
+						switch v := c.(type) {
+						case GracefulController:
+							e.Server.RegisterOnShutdown(v.OnShutdown)
+						}
 
 						break
 					}
