@@ -1,4 +1,7 @@
-// Package middleware provide implementations of custom middleware for the echo framework.
+// Copyright 2018 Sergey Novichkov. All rights reserved.
+// For the full copyright and license information, please view the LICENSE
+// file that was distributed with this source code.
+
 package middleware
 
 import (
@@ -10,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
 
-	"github.com/gozix/echo/v2/errors"
+	"github.com/gozix/echo/v3/errors"
 )
 
 // ZapConfig defines the config for AccessWithConfig middleware.

@@ -1,4 +1,7 @@
-// Package errors provides implementations of custom errors for the echo framework.
+// Copyright 2018 Sergey Novichkov. All rights reserved.
+// For the full copyright and license information, please view the LICENSE
+// file that was distributed with this source code.
+
 package errors
 
 import (

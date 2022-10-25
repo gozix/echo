@@ -1,47 +1,31 @@
-// Package configurator provides dependency injection definitions.
+// Copyright 2018 Sergey Novichkov. All rights reserved.
+// For the full copyright and license information, please view the LICENSE
+// file that was distributed with this source code.
+
 package configurator
 
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/sarulabs/di/v2"
-
-	gzValidator "github.com/gozix/validator/v2"
 )
 
-// Wrapper implementation.
-type Wrapper struct {
+// Decorator implementation.
+type Decorator struct {
 	validator *validator.Validate
 }
 
-// DefValidatorConfiguratorName is a definition name.
-const DefValidatorConfiguratorName = "echo.configurator.validator"
+// NewValidator is echo configurator constructor.
+func NewValidator(v *validator.Validate) Configurator {
+	return func(e *echo.Echo) error {
+		e.Validator = &Decorator{
+			validator: v,
+		}
 
-// DefValidatorConfigurator is echo validator definition getter.
-func DefValidatorConfigurator() di.Def {
-	return di.Def{
-		Name: DefValidatorConfiguratorName,
-		Tags: []di.Tag{{
-			Name: TagConfigurator,
-		}},
-		Build: func(ctn di.Container) (interface{}, error) {
-			return func(e *echo.Echo) (err error) {
-				var v *validator.Validate
-				if err = ctn.Fill(gzValidator.BundleName, &v); err != nil {
-					return err
-				}
-
-				e.Validator = &Wrapper{
-					validator: v,
-				}
-
-				return nil
-			}, nil
-		},
+		return nil
 	}
 }
 
 // Validate data
-func (v *Wrapper) Validate(i interface{}) error {
+func (v *Decorator) Validate(i interface{}) error {
 	return v.validator.Struct(i)
 }

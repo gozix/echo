@@ -1,70 +1,40 @@
-// Package echo provides dependency injection definitions.
+// Copyright 2018 Sergey Novichkov. All rights reserved.
+// For the full copyright and license information, please view the LICENSE
+// file that was distributed with this source code.
+
 package echo
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/sarulabs/di/v2"
+	"github.com/gozix/di"
+	"github.com/gozix/glue/v3"
+	gzValidator "github.com/gozix/validator/v3"
+	gzViper "github.com/gozix/viper/v3"
+	gzZap "github.com/gozix/zap/v3"
 
-	gzValidator "github.com/gozix/validator/v2"
-	gzViper "github.com/gozix/viper/v2"
-	gzZap "github.com/gozix/zap/v2"
-
-	"github.com/gozix/echo/v2/internal/command"
-	"github.com/gozix/echo/v2/internal/configurator"
+	"github.com/gozix/echo/v3/internal/command"
+	"github.com/gozix/echo/v3/internal/configurator"
+	"github.com/gozix/echo/v3/internal/echo"
 )
 
 type (
 	// Bundle implements the glue.Bundle interface.
-	Bundle struct {
-		errHandlerDefName string
-	}
+	Bundle struct{}
 
 	// Configurator is type alias of configurator.Configurator.
 	Configurator = configurator.Configurator
 
 	// Controller is type alias of controller.Controller.
 	Controller = configurator.Controller
-
-	// Option interface.
-	Option interface {
-		apply(b *Bundle)
-	}
-
-	// optionFunc wraps a func so it satisfies the Option interface.
-	optionFunc func(b *Bundle)
-)
-
-const (
-	// TagController is alias of controller.Controller.
-	TagController = configurator.TagController
-
-	// TagConfigurator is alias of configurator.TagConfigurator.
-	TagConfigurator = configurator.TagConfigurator
-
-	// TagMiddleware is alias of configurator.TagMiddleware.
-	TagMiddleware = configurator.TagMiddleware
 )
 
 // BundleName is default definition name.
 const BundleName = "echo"
 
-// ErrHandler option.
-// Deprecated: Use container definitions overriding. Will be removed in 3.0.
-func ErrHandler(defName string) Option {
-	return optionFunc(func(b *Bundle) {
-		b.errHandlerDefName = defName
-	})
-}
+var _ glue.Bundle = (*Bundle)(nil)
 
 // NewBundle create bundle instance.
-func NewBundle(options ...Option) *Bundle {
-	var b = new(Bundle)
-
-	for _, option := range options {
-		option.apply(b)
-	}
-
-	return b
+func NewBundle() *Bundle {
+	return new(Bundle)
 }
 
 // Name implements the glue.Bundle interface.
@@ -73,58 +43,31 @@ func (b *Bundle) Name() string {
 }
 
 // Build implements the glue.Bundle interface.
-func (b *Bundle) Build(builder *di.Builder) error {
-	return builder.Add(
+func (b *Bundle) Build(builder di.Builder) error {
+	return builder.Apply(
 		// echo
-		di.Def{
-			Name: BundleName,
-			Build: func(ctn di.Container) (_ interface{}, err error) {
-				var e = echo.New()
-				for name, def := range ctn.Definitions() {
-					for _, tag := range def.Tags {
-						if tag.Name != configurator.TagConfigurator {
-							continue
-						}
-
-						var conf configurator.Configurator
-						if err = ctn.Fill(name, &conf); err != nil {
-							return nil, err
-						}
-
-						if err = conf(e); err != nil {
-							return nil, err
-						}
-
-						break
-					}
-				}
-
-				return e, nil
-			},
-		},
+		di.Provide(echo.New, di.Constraint(0, di.Optional(true), withConfigurator())),
 
 		// command's
-		command.DefEchoHTTPServer(BundleName),
+		di.Provide(command.NewHTTPServer, glue.AsCliCommand()),
 
 		// configurator's
-		configurator.DefControllerConfigurator(),
-		configurator.DefEchoConfigurator(),
-		configurator.DefErrHandlerConfigurator(b.errHandlerDefName),
-		configurator.DefMiddlewareConfigurator(),
-		configurator.DefValidatorConfigurator(),
+		di.Provide(configurator.NewController, AsConfigurator()),
+		di.Provide(configurator.NewEcho, AsConfigurator()),
+		di.Provide(configurator.NewErrHandler, AsConfigurator()),
+		di.Provide(
+			configurator.NewMiddleware, AsConfigurator(),
+			di.Constraint(0, withMiddleware(), sortByPriority()),
+		),
+		di.Provide(configurator.NewValidator, AsConfigurator()),
 	)
 }
 
 // DependsOn implements the glue.DependsOn interface.
 func (b *Bundle) DependsOn() []string {
 	return []string{
-		gzViper.BundleName,
 		gzValidator.BundleName,
+		gzViper.BundleName,
 		gzZap.BundleName,
 	}
-}
-
-// apply implements Option.
-func (f optionFunc) apply(bundle *Bundle) {
-	f(bundle)
 }
