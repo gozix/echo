@@ -7,6 +7,7 @@ package command
 import (
 	"context"
 	"net"
+	"net/http"
 	"time"
 
 	"github.com/gozix/di"
@@ -31,8 +32,13 @@ func NewHTTPServer(ctn di.Container) *cobra.Command {
 				logger.Info("Starting HTTP server", zap.String("addr", addr))
 
 				go func() {
-					if err = e.Start(addr); err != nil {
+					runErr := e.Start(addr)
+					if runErr == http.ErrServerClosed {
 						logger.Info("Gracefully shutting down the HTTP server")
+						return
+					}
+					if runErr != nil {
+						logger.Error("HTTP server terminated incorrectly", zap.Error(runErr))
 					}
 				}()
 
