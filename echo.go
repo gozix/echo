@@ -52,7 +52,7 @@ func (b *Bundle) Build(builder di.Builder) error {
 		di.Provide(command.NewHTTPServer, glue.AsCliCommand()),
 
 		// configurator's
-		di.Provide(configurator.NewController, AsConfigurator()),
+		di.Provide(configurator.NewController, di.Constraint(0, di.Optional(true)), AsConfigurator()),
 		di.Provide(configurator.NewEcho, AsConfigurator()),
 		di.Provide(configurator.NewErrHandler, AsConfigurator()),
 		di.Provide(
