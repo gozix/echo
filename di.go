@@ -7,10 +7,19 @@ import (
 )
 
 const (
-	// tagConfigurator is tag to mark middleware's.
+	// tagServerName is tag to mark a server name value.
+	tagServerName = "echo.server_name"
+
+	// tagEcho is tag to mark a echo instance.
+	tagEcho = "echo.echo"
+
+	// tagConfigurator is tag to mark configurators.
 	tagConfigurator = "echo.configurator"
 
-	// tagMiddleware is tag to mark middleware's.
+	// tagController is tag to mark controllers.
+	tagController = "echo.controller"
+
+	// tagMiddleware is tag to mark middlewares.
 	tagMiddleware = "echo.middleware"
 
 	// argMiddlewarePriority is name of priority argument.
@@ -18,25 +27,45 @@ const (
 )
 
 // AsConfigurator is syntax sugar for the di container.
-func AsConfigurator() di.ProvideOption {
+func AsConfigurator(srvName string) di.ProvideOption {
 	return di.Tags{{
-		Name: tagConfigurator,
+		Name: tagConfigurator + "." + srvName,
 	}}
 }
 
 // AsController is syntax sugar for the di container.
-func AsController() di.ProvideOption {
-	return di.As(new(Controller))
+func AsController(srvName string) di.ProvideOption {
+	return di.ProvideOptions(di.Tags{{
+		Name: tagController + "." + srvName,
+	}}, di.As(new(Controller)))
 }
 
 // AsMiddleware is syntax sugar for the di container.
-func AsMiddleware(priority int64) di.ProvideOption {
+func AsMiddleware(srvName string, priority int64) di.ProvideOption {
 	return di.Tags{{
-		Name: tagMiddleware,
+		Name: tagMiddleware + "." + srvName,
 		Args: di.Args{{
 			Key:   argMiddlewarePriority,
 			Value: strconv.FormatInt(priority, 10),
 		}},
+	}}
+}
+
+func asServerName(srvName string) di.AddOption {
+	return di.Tags{{
+		Name: tagServerName,
+		Args: di.Args{{
+			Key:   "name",
+			Value: srvName,
+		}},
+	}, {
+		Name: tagServerName + "." + srvName,
+	}}
+}
+
+func asEcho(srvName string) di.ProvideOption {
+	return di.Tags{{
+		Name: tagEcho + "." + srvName,
 	}}
 }
 
@@ -64,10 +93,18 @@ func sortByPriority() di.Modifier {
 	})
 }
 
-func withConfigurator() di.Modifier {
-	return di.WithTags(tagConfigurator)
+func withServerName(srvName string) di.Modifier {
+	return di.WithTags(tagServerName + "." + srvName)
 }
 
-func withMiddleware() di.Modifier {
-	return di.WithTags(tagMiddleware)
+func withConfigurator(srvName string) di.Modifier {
+	return di.WithTags(tagConfigurator + "." + srvName)
+}
+
+func withController(srvName string) di.Modifier {
+	return di.WithTags(tagController + "." + srvName)
+}
+
+func withMiddleware(srvName string) di.Modifier {
+	return di.WithTags(tagMiddleware + "." + srvName)
 }

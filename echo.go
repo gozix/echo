@@ -11,14 +11,16 @@ import (
 	gzViper "github.com/gozix/viper/v3"
 	gzZap "github.com/gozix/zap/v3"
 
-	"github.com/gozix/echo/v3/internal/command"
-	"github.com/gozix/echo/v3/internal/configurator"
-	"github.com/gozix/echo/v3/internal/echo"
+	"github.com/gozix/echo/v4/internal/command"
+	"github.com/gozix/echo/v4/internal/configurator"
+	"github.com/gozix/echo/v4/internal/echo"
 )
 
 type (
 	// Bundle implements the glue.Bundle interface.
-	Bundle struct{}
+	Bundle struct {
+		svrNames []string
+	}
 
 	// Configurator is type alias of configurator.Configurator.
 	Configurator = configurator.Configurator
@@ -33,8 +35,10 @@ const BundleName = "echo"
 var _ glue.Bundle = (*Bundle)(nil)
 
 // NewBundle create bundle instance.
-func NewBundle() *Bundle {
-	return new(Bundle)
+func NewBundle(svrNames ...string) *Bundle {
+	return &Bundle{
+		svrNames: svrNames,
+	}
 }
 
 // Name implements the glue.Bundle interface.
@@ -44,23 +48,40 @@ func (b *Bundle) Name() string {
 
 // Build implements the glue.Bundle interface.
 func (b *Bundle) Build(builder di.Builder) error {
-	return builder.Apply(
-		// echo
-		di.Provide(echo.New, di.Constraint(0, di.Optional(true), withConfigurator())),
-
-		// command's
+	var opt = []di.BuilderOption{
 		di.Provide(command.NewHTTPServer, glue.AsCliCommand()),
+	}
 
-		// configurator's
-		di.Provide(configurator.NewController, di.Constraint(0, di.Optional(true)), AsConfigurator()),
-		di.Provide(configurator.NewEcho, AsConfigurator()),
-		di.Provide(configurator.NewErrHandler, AsConfigurator()),
-		di.Provide(
-			configurator.NewMiddleware, AsConfigurator(),
-			di.Constraint(0, withMiddleware(), sortByPriority()),
-		),
-		di.Provide(configurator.NewValidator, AsConfigurator()),
-	)
+	for _, srvName := range b.svrNames {
+		opt = append(opt, di.BuilderOptions(
+			// server name
+			di.Add(srvName, asServerName(srvName)),
+
+			// echo
+			di.Provide(
+				echo.New, asEcho(srvName),
+				di.Constraint(0, withConfigurator(srvName)),
+			),
+
+			// configurators
+			di.Provide(
+				configurator.NewController, AsConfigurator(srvName),
+				di.Constraint(0, withController(srvName), di.Optional(true)),
+			),
+			di.Provide(
+				configurator.NewMiddleware, AsConfigurator(srvName),
+				di.Constraint(0, withMiddleware(srvName), di.Optional(true), sortByPriority()),
+			),
+			di.Provide(
+				configurator.NewEcho, AsConfigurator(srvName),
+				di.Constraint(0, withServerName(srvName)),
+			),
+			di.Provide(configurator.NewErrHandler, AsConfigurator(srvName)),
+			di.Provide(configurator.NewValidator, AsConfigurator(srvName)),
+		))
+	}
+
+	return builder.Apply(opt...)
 }
 
 // DependsOn implements the glue.DependsOn interface.

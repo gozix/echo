@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 
-	"github.com/gozix/echo/v3/errors"
+	"github.com/gozix/echo/v4/errors"
 )
 
 // NewErrHandler is configurator constructor.

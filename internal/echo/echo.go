@@ -5,11 +5,11 @@
 package echo
 
 import (
-	"github.com/gozix/echo/v3/internal/configurator"
 	"github.com/labstack/echo/v4"
+
+	"github.com/gozix/echo/v4/internal/configurator"
 )
 
-// New is echo constructor.
 func New(configurators []configurator.Configurator) (*echo.Echo, error) {
 	var e = echo.New()
 	for _, c := range configurators {
