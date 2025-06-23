@@ -6,7 +6,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/gobwas/glob v0.2.3
-	github.com/gozix/di v1.0.3-0.20250610161907-98dec9a79a9c
+	github.com/gozix/di v1.0.3
 	github.com/gozix/glue/v3 v3.0.0
 	github.com/gozix/validator/v3 v3.0.0
 	github.com/gozix/viper/v3 v3.0.3
