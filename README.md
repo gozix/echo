@@ -1,7 +1,7 @@
 # GoZix Echo
 
 [documentation-img]: https://img.shields.io/badge/godoc-reference-blue.svg?color=24B898&style=for-the-badge&logo=go&logoColor=ffffff
-[documentation-url]: https://pkg.go.dev/github.com/gozix/echo/v3
+[documentation-url]: https://pkg.go.dev/github.com/gozix/echo/v4
 [license-img]: https://img.shields.io/github/license/gozix/echo.svg?style=for-the-badge
 [license-url]: https://github.com/gozix/echo/blob/master/LICENSE
 [release-img]: https://img.shields.io/github/tag/gozix/echo.svg?label=release&color=24B898&logo=github&style=for-the-badge
@@ -26,7 +26,7 @@ The bundle provide a Echo integration to GoZix application.
 ## Installation
 
 ```shell
-go get github.com/gozix/echo/v3
+go get github.com/gozix/echo/v4
 ```
 
 ## Dependencies
@@ -35,30 +35,43 @@ go get github.com/gozix/echo/v3
 * [viper](https://github.com/gozix/viper)
 * [zap](https://github.com/gozix/zap)
 
-## Configuration
+## Configuration 3 or more servers
 
 ```json
 {
   "echo": {
-    "debug": false,
-    "level": "debug",
-    "static": {
-      "prefix": "/",
-      "root": ""
+    "admin": {
+      "host": "0.0.0.0",
+      "port": 8080,
+      "level": "debug",
+      "debug": false,
+      "hide_banner": true,
+      "hide_port": false 
+    }, 
+    "public": {
+      "host": "0.0.0.0",
+      "port": 8081,
+      "static": {
+        "prefix": "/",
+        "root": ""
+      },
+      "level": "info",
+      "debug": false,
+      "hide_banner": true,
+      "hide_port": false 
     },
-    "hide_banner": false,
-    "hide_port": false 
+    "private": {
+      "port": 8082,
+      "...": "..."
+    },
+    "...": {}
   }
 }
 ```
 
-## Built-in Tags
-
-| Symbol                | Value                         | Description               | 
-| --------------------- | ----------------------------- | ------------------------- |
-| TagController         | echo.controller               | Add a controller          |
-| TagConfigurator       | echo.configurator             | Add a configurator        |
-| TagMiddleware         | echo.middleware               | Add a middleware          |
+```golang
+gzEcho.NewBundle("admin", "public", "private")
+```
 
 ## Documentation
 

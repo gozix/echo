@@ -5,19 +5,23 @@
 package configurator
 
 import (
+	"fmt"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"github.com/spf13/viper"
 )
 
 // NewEcho is echo configurator constructor.
-func NewEcho(cfg *viper.Viper) Configurator {
+func NewEcho(srvName string, cfg *viper.Viper) Configurator {
 	return func(e *echo.Echo) error {
-		if cfg.IsSet("echo.debug") {
-			e.Debug = cfg.GetBool("echo.debug")
+		if !cfg.IsSet("echo." + srvName) {
+			return fmt.Errorf("configuration echo.%s is not found", srvName)
 		}
 
-		switch cfg.GetString("echo.level") {
+		var c = cfg.Sub("echo." + srvName)
+
+		switch c.GetString("level") {
 		case "debug":
 			e.Logger.SetLevel(log.DEBUG)
 		case "info":
@@ -30,20 +34,16 @@ func NewEcho(cfg *viper.Viper) Configurator {
 			e.Logger.SetLevel(log.OFF)
 		}
 
-		if cfg.IsSet("echo.static") {
+		if c.IsSet("static") {
 			e.Static(
-				cfg.GetString("echo.static.prefix"),
-				cfg.GetString("echo.static.root"),
+				c.GetString("static.prefix"),
+				c.GetString("static.root"),
 			)
 		}
 
-		if cfg.IsSet("echo.hide_banner") {
-			e.HideBanner = cfg.GetBool("echo.hide_banner")
-		}
-
-		if cfg.IsSet("echo.hide_port") {
-			e.HidePort = cfg.GetBool("echo.hide_port")
-		}
+		e.Debug = c.GetBool("debug")
+		e.HidePort = c.GetBool("hide_port")
+		e.HideBanner = c.GetBool("hide_banner")
 
 		return nil
 	}

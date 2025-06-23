@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	"github.com/gozix/echo/v3/errors"
+	"github.com/gozix/echo/v4/errors"
 )
 
 // ErrTransConfig defines the config for ErrTransWithConfig middleware.
