@@ -51,15 +51,9 @@ func AsMiddleware(srvName string, priority int64) di.ProvideOption {
 	}}
 }
 
-func asServerName(srvName string) di.AddOption {
+func asServerName() di.AddOption {
 	return di.Tags{{
 		Name: tagServerName,
-		Args: di.Args{{
-			Key:   "name",
-			Value: srvName,
-		}},
-	}, {
-		Name: tagServerName + "." + srvName,
 	}}
 }
 
@@ -69,42 +63,6 @@ func asEcho(srvName string) di.ProvideOption {
 	}}
 }
 
-func sortByPriority() di.Modifier {
-	return di.Sort(func(x, y di.Definition) bool {
-		var xp int64
-		for _, tag := range x.Tags() {
-			for _, arg := range tag.Args {
-				if arg.Key == argMiddlewarePriority {
-					xp, _ = strconv.ParseInt(arg.Value, 10, 64)
-				}
-			}
-		}
-
-		var yp int64
-		for _, tag := range y.Tags() {
-			for _, arg := range tag.Args {
-				if arg.Key == argMiddlewarePriority {
-					yp, _ = strconv.ParseInt(arg.Value, 10, 64)
-				}
-			}
-		}
-
-		return xp > yp
-	})
-}
-
-func withServerName(srvName string) di.Modifier {
-	return di.WithTags(tagServerName + "." + srvName)
-}
-
-func withConfigurator(srvName string) di.Modifier {
-	return di.WithTags(tagConfigurator + "." + srvName)
-}
-
-func withController(srvName string) di.Modifier {
-	return di.WithTags(tagController + "." + srvName)
-}
-
-func withMiddleware(srvName string) di.Modifier {
-	return di.WithTags(tagMiddleware + "." + srvName)
+func withServerName() di.Modifier {
+	return di.WithTags(tagServerName)
 }

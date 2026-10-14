@@ -69,8 +69,26 @@ go get github.com/gozix/echo/v4
 }
 ```
 
+Without server names the `http-server` command runs all servers from the `echo` config section:
+
+```golang
+gzEcho.NewBundle()
+```
+
+With server names the command runs only these servers and fails if any of them is not configured:
+
 ```golang
 gzEcho.NewBundle("admin", "public", "private")
+```
+
+To get a server echo instance outside the `http-server` command, use the factory:
+
+```golang
+func NewRoutesCommand(f *gzEcho.Factory) *cobra.Command {
+	// ...
+	var e, err = f.Echo("admin")
+	// ...
+}
 ```
 
 ## Documentation
