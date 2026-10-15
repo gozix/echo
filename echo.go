@@ -10,10 +10,11 @@ import (
 	gzValidator "github.com/gozix/validator/v3"
 	gzViper "github.com/gozix/viper/v3"
 	gzZap "github.com/gozix/zap/v3"
+	"github.com/labstack/echo/v4"
 
 	"github.com/gozix/echo/v4/internal/command"
 	"github.com/gozix/echo/v4/internal/configurator"
-	"github.com/gozix/echo/v4/internal/echo"
+	"github.com/gozix/echo/v4/internal/factory"
 )
 
 type (
@@ -27,6 +28,9 @@ type (
 
 	// Controller is type alias of controller.Controller.
 	Controller = configurator.Controller
+
+	// Factory is type alias of factory.Factory.
+	Factory = factory.Factory
 )
 
 // BundleName is default definition name.
@@ -50,34 +54,21 @@ func (b *Bundle) Name() string {
 func (b *Bundle) Build(builder di.Builder) error {
 	var opt = []di.BuilderOption{
 		di.Provide(command.NewHTTPServer, glue.AsCliCommand()),
+		di.Provide(factory.New, di.Constraint(4, withServerName(), di.Optional(true))),
 	}
 
 	for _, srvName := range b.svrNames {
 		opt = append(opt, di.BuilderOptions(
 			// server name
-			di.Add(srvName, asServerName(srvName)),
+			di.Add(srvName, asServerName()),
 
 			// echo
 			di.Provide(
-				echo.New, asEcho(srvName),
-				di.Constraint(0, withConfigurator(srvName)),
+				func(f *Factory) (*echo.Echo, error) {
+					return f.Echo(srvName)
+				},
+				asEcho(srvName),
 			),
-
-			// configurators
-			di.Provide(
-				configurator.NewController, AsConfigurator(srvName),
-				di.Constraint(0, withController(srvName), di.Optional(true)),
-			),
-			di.Provide(
-				configurator.NewMiddleware, AsConfigurator(srvName),
-				di.Constraint(0, withMiddleware(srvName), di.Optional(true), sortByPriority()),
-			),
-			di.Provide(
-				configurator.NewEcho, AsConfigurator(srvName),
-				di.Constraint(0, withServerName(srvName)),
-			),
-			di.Provide(configurator.NewErrHandler, AsConfigurator(srvName)),
-			di.Provide(configurator.NewValidator, AsConfigurator(srvName)),
 		))
 	}
 
