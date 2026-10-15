@@ -6,8 +6,10 @@ package command
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"time"
 
 	"github.com/gozix/di"
@@ -59,25 +61,36 @@ func NewHTTPServer(ctn di.Container) *cobra.Command {
 
 						log.Info("Starting HTTP server")
 
+						var stopped = make(chan error, 1)
 						go func() {
-							if err = e.Start(addr); err != nil {
-								log.Info("Gracefully shutting down the HTTP server")
-							}
+							stopped <- e.Start(addr)
 						}()
 
-						log.Info("HTTP server started")
+						select {
+						case <-ctx.Done():
+							// graceful shutdown
+							var timeout = 10 * time.Second
+							log.Info("Stopping HTTP server", zap.Duration("timeout", timeout))
 
-						// wait, context cancellation
-						<-ctx.Done()
+							var timeoutContext, cancel = context.WithTimeout(context.Background(), timeout)
+							defer cancel()
 
-						// graceful shutdown
-						var timeout = 10 * time.Second
-						log.Info("Stopping HTTP server", zap.Duration("timeout", timeout))
+							if err = e.Shutdown(timeoutContext); err != nil {
+								return fmt.Errorf("unable to stop http server %s : %w", srvName, err)
+							}
 
-						var timeoutContext, cancel = context.WithTimeout(context.Background(), timeout)
-						defer cancel()
+							err = <-stopped
+						case err = <-stopped:
+							// stopped without shutdown, e.g. the address is already in use
+						}
 
-						return e.Shutdown(timeoutContext)
+						// http.ErrServerClosed is returned by the start after the shutdown
+						if errors.Is(err, http.ErrServerClosed) {
+							log.Info("HTTP server stopped")
+							return nil
+						}
+
+						return fmt.Errorf("http server %s : %w", srvName, err)
 					})
 				}
 

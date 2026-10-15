@@ -19,24 +19,11 @@ import (
 
 	"github.com/gozix/echo/v4/internal/configurator"
 	internalEcho "github.com/gozix/echo/v4/internal/echo"
+	"github.com/gozix/echo/v4/internal/tag"
 )
 
-const (
-	// configKey is config section with servers configuration.
-	configKey = "echo"
-
-	// tagConfigurator is tag to mark configurators.
-	tagConfigurator = "echo.configurator"
-
-	// tagController is tag to mark controllers.
-	tagController = "echo.controller"
-
-	// tagMiddleware is tag to mark middlewares.
-	tagMiddleware = "echo.middleware"
-
-	// argMiddlewarePriority is name of priority argument.
-	argMiddlewarePriority = "priority"
-)
+// configKey is config section with servers configuration.
+const configKey = "echo"
 
 // Factory builds echo servers on demand, after config is read.
 type Factory struct {
@@ -111,9 +98,9 @@ func (f *Factory) getConfigurators(name string) (_ []configurator.Configurator, 
 				configurator.NewValidator(f.validate),
 			}, custom...)
 		},
-		di.Constraint(0, di.Optional(true), di.WithTags(tagController+"."+name)),
-		di.Constraint(1, di.Optional(true), di.WithTags(tagMiddleware+"."+name), sortByPriority()),
-		di.Constraint(2, di.Optional(true), di.WithTags(tagConfigurator+"."+name)),
+		di.Constraint(0, di.Optional(true), di.WithTags(tag.Controller+"."+name)),
+		di.Constraint(1, di.Optional(true), di.WithTags(tag.Middleware+"."+name), sortByPriority()),
+		di.Constraint(2, di.Optional(true), di.WithTags(tag.Configurator+"."+name)),
 	)
 
 	return configurators, err
@@ -122,18 +109,18 @@ func (f *Factory) getConfigurators(name string) (_ []configurator.Configurator, 
 func sortByPriority() di.Modifier {
 	return di.Sort(func(x, y di.Definition) bool {
 		var xp int64
-		for _, tag := range x.Tags() {
-			for _, arg := range tag.Args {
-				if arg.Key == argMiddlewarePriority {
+		for _, t := range x.Tags() {
+			for _, arg := range t.Args {
+				if arg.Key == tag.ArgMiddlewarePriority {
 					xp, _ = strconv.ParseInt(arg.Value, 10, 64)
 				}
 			}
 		}
 
 		var yp int64
-		for _, tag := range y.Tags() {
-			for _, arg := range tag.Args {
-				if arg.Key == argMiddlewarePriority {
+		for _, t := range y.Tags() {
+			for _, arg := range t.Args {
+				if arg.Key == tag.ArgMiddlewarePriority {
 					yp, _ = strconv.ParseInt(arg.Value, 10, 64)
 				}
 			}
